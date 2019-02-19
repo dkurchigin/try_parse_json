@@ -30,13 +30,19 @@ json_string = """{
 def format_list_to_str(list):
     return re.sub(r'(\[\'|\'\])', '', list)
         
-def recursive(obj):
+def recursive(obj, level):
     only_k_v = ""
+    element_level = ""
     if isinstance(obj, dict):
         for key, value in obj.items():
-            only_k_v = "element " + str(key) + ":" + str(value)
+            level =+ 1
+            if level == 1:
+                element_level = "\t"
+            
+            only_k_v = element_level + str(key) + ":" + str(value)
             if isinstance(value, dict):
-                recursive(value)
+                print (key)
+                recursive(value, level)
             else:
                 if isinstance(value, list):
                     only_k_v = format_list_to_str(str(value))
@@ -46,4 +52,4 @@ def recursive(obj):
 with open("RobotizationCalls.json", "r", encoding='utf-8') as read_file:
     parsed_string = json.load(read_file)
 
-recursive(parsed_string)
+recursive(parsed_string, 0)

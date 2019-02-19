@@ -41,11 +41,20 @@ def recursive(obj, level):
             
             only_k_v = element_level + str(key) + ":" + str(value)
             if isinstance(value, dict):
-                print (key)
+                print (str(key) + ":")
                 recursive(value, level)
             else:
                 if isinstance(value, list):
-                    only_k_v = format_list_to_str(str(value))
+                    if (level != 1):
+                        only_k_v = format_list_to_str(str(value))
+                    else:
+                        only_k_v = re.sub(r'(\t|\[.*)', '', only_k_v)
+                        only_k_v = re.sub(r'(:)', ':\n\t', only_k_v)
+                        only_k_v = only_k_v + format_list_to_str(str(value))
+                        #print (value)
+                        #only_k_v = re.sub(r'(:)', ':\n\t', only_k_v)
+                        #format_list_to_str(only_k_v)
+                        #only_k_v = only_k_v + key
                 print(only_k_v)
 
                 

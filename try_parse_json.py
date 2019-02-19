@@ -1,4 +1,5 @@
 import json
+import re
  
 # строка которую будем парсить
 json_string = """{
@@ -26,23 +27,23 @@ json_string = """{
 #for line in f:
     #print (line)
 
-def recursion_print_elements(first_element, section):
-    print (first_element)
-    for element in first_element:
-        print (element + ":")
-        print (parsed_string[section][element])
-        print ("\n")
-        if isinstance(element,dict):
-            print ("true")
-        else:
-            print ("not dict")
+def format_list_to_str(list):
+    return re.sub(r'(\[\'|\'\])', '', list)
         
-        #recursion_print_elements(parsed_string[element],element)
-        
+def recursive(obj):
+    only_k_v = ""
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            only_k_v = "element " + str(key) + ":" + str(value)
+            if isinstance(value, dict):
+                recursive(value)
+            else:
+                if isinstance(value, list):
+                    only_k_v = format_list_to_str(str(value))
+                print(only_k_v)
+
+                
 with open("RobotizationCalls.json", "r", encoding='utf-8') as read_file:
     parsed_string = json.load(read_file)
 
-#print (globals_params)
-section = "globals"
-globals_params = (parsed_string[section])
-recursion_print_elements(globals_params, section)
+recursive(parsed_string)

@@ -32,14 +32,12 @@ def recursion_print_elements(first_element, section):
         print (element + ":")
         print (parsed_string[section][element])
         print ("\n")
-        if parsed_string[section][element] in element:
+        if isinstance(element,dict):
             print ("true")
+        else:
+            print ("not dict")
         
         #recursion_print_elements(parsed_string[element],element)
-    #if "RobotizationCalls" in "script_types":
-        #print ("true")
-    #else:
-        #print ("false")
         
 with open("RobotizationCalls.json", "r", encoding='utf-8') as read_file:
     parsed_string = json.load(read_file)

@@ -1,34 +1,55 @@
 import json
+import os
 import re
- 
-# строка которую будем парсить
-json_string = """{
-  "orderID": 42,
-  "customerName": "John Smith",
-  "customerPhoneN": "555-1234",
-  "orderContents": [
-    {
-      "productID": 23,
-      "productName": "keyboard",
-      "quantity": 1
-    },
-    {
-      "productID": 13,
-      "productName": "mouse",
-      "quantity": 1
-    }
-  ],
-  "orderCompleted": true
-} """
- 
-# распарсенная строка
-#parsed_string = json.loads(json_string)
-#f = open("RobotizationCalls.json", 'r', encoding='utf-8')
-#for line in f:
-    #print (line)
+import sqlite3
 
-def format_list_to_str(list):
-    return re.sub(r'(\[\'|\'\])', '', list)
+def check_db_exist(file):
+    db_extension = file + ".db"
+    while True:
+        if os.path.isfile(db_extension):
+            print("База данных {} уже существует. Переписать?".format(db_extension))
+            print("(Y)es | (N)o?")
+
+            answer = input()
+            pattern_for_yes = '(^[yY]$|^[yY][eE][sS]$|^[дД]$|^[дД][аА]$)'
+
+            if re.match(pattern_for_yes, answer):
+                os.remove(db_extension)
+                print("Удаляю старую версию базы данных {}".format(db_extension))
+            else:
+                break
+        else:
+            create_db(db_extension)
+            print("Создана база: {}".format(db_extension))
+            parse_phrases(parsed_string["phrases"], db_extension)
+            break
+
+       
+def create_db(database_file):       
+    con = sqlite3.connect(database_file)
+    cur = con.cursor()
+    cur.execute('CREATE TABLE rule_dicts (id INTEGER PRIMARY KEY, dict_name VARCHAR(128), dict_content TEXT)')
+    con.commit()
+    con.close()
+    
+
+def write_data(database_file, dict_sql):
+    con = sqlite3.connect(database_file)
+    cur = con.cursor()
+    for key, value in dict_sql.items():
+        cur.execute('INSERT INTO rule_dicts (id, dict_name, dict_content) VALUES(NULL, \'{}\', \'{}\')'.format(key, value))
+    con.commit()
+    con.close()
+    
+            
+def format_list_to_str(input_list):
+    out_str = ""
+    for rule in input_list:
+        out_str = out_str + "\"{}\"".format(rule)
+        if not input_list.index(rule) == (len(input_list) - 1):
+            out_str = out_str + ",\n"
+    return out_str
+        
         
 def read_phrases_dicts(obj):
     only_k_v = ""
@@ -82,7 +103,16 @@ def recursive(obj, level):
                 print(only_k_v)
 
                 
+def parse_phrases(rule_dicts, db_extension):
+    for key, value in rule_dicts.items():
+        pure_value = format_list_to_str(value)
+        rule_dicts[key] = pure_value
+        print("{}\n{}\n\n".format(key, pure_value))
+    write_data(db_extension, rule_dicts)
+        
+                
+#-----------------------------                
 with open("RobotizationCalls.json", "r", encoding='utf-8') as read_file:
     parsed_string = json.load(read_file)
 
-recursive(parsed_string["phrases"], 0)
+check_db_exist("RobotizationCalls.json")
